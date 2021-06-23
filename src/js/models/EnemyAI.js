@@ -25,11 +25,11 @@ export default class EnemyAI {
     const { moveRange, attackRange } = character;
     const { distance } = this.movement.calculateDistance(
       position,
-      player.position
+      player.position,
     );
 
     const turnsNumber = Math.ceil(
-      (distance - 1) / (moveRange + attackRange - 1)
+      (distance - 1) / (moveRange + attackRange - 1),
     );
     const potentialDamage = character.calculateDamage(player.character);
     const hitsToKill = Math.ceil(player.character.health / potentialDamage);
@@ -38,8 +38,8 @@ export default class EnemyAI {
   }
 
   findCharBestAction(enemyChar) {
-    let highestPriority = 0,
-      target;
+    let highestPriority = 0;
+    let target;
 
     for (const playerChar of this.playerChars) {
       const priority = this.calculatePriority(enemyChar, playerChar);
@@ -52,8 +52,8 @@ export default class EnemyAI {
   }
 
   findTeamBestAction(actionsArr) {
-    let mostEffectiveAction,
-      highestPriority = 0;
+    let mostEffectiveAction;
+    let highestPriority = 0;
     for (const action of actionsArr) {
       if (action.priority > highestPriority) {
         highestPriority = action.priority;
@@ -79,7 +79,7 @@ export default class EnemyAI {
         this.gameController.deselectEnemyCharacter(actor.position);
         const { playerTeam } = this.gameController;
         if (playerTeam.length !== 0) {
-          console.log('enemyai')
+          console.log('enemyai');
           this.gameController.switchTurn();
         }
       }, 100);
@@ -94,7 +94,7 @@ export default class EnemyAI {
 
     let { verticalDiff, horizontalDiff } = this.movement.calculateDistance(
       index,
-      target.position
+      target.position,
     );
 
     const isVerticalDiffNegative = verticalDiff < 0;
@@ -117,10 +117,10 @@ export default class EnemyAI {
 
     const indexToMove = this.movement.calculatePositionByCoordsDifference(
       index,
-      { verticalDiff, horizontalDiff }
+      { verticalDiff, horizontalDiff },
     );
-    if (this.movement.isCellAvailableForMove(actor, indexToMove)) {
-    }
+    // if (this.movement.isCellAvailableForMove(actor, indexToMove)) {
+    // }
     console.log('indexToMove', indexToMove);
     this.movement.moveChar(actor, indexToMove);
   }

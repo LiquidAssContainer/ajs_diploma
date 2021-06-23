@@ -45,14 +45,14 @@ describe('Credit Card Validator form', () => {
     await playerChar.click();
     await boardElem.$('.selected-yellow .player');
     await enemyChar.hover();
-    const cursorStyle = await page.$eval('.board', el => el.style.cursor)
-    if (cursorStyle !== 'not-allowed') throw new Error('Wrong cursor style')
+    const cursorStyle = await page.$eval('.board', (el) => el.style.cursor);
+    if (cursorStyle !== 'not-allowed') throw new Error('Wrong cursor style');
     // console.log(cursorStyle)
     // const isCursorNotAllowed = await page.evaluate(() => {
     // await page.evaluate(() => {
     //   return new Promise((resolve) => {
     //     const body = document.querySelector('body');
-  
+
     //     const cursorStyle = getComputedStyle(body).getPropertyValue('cursor');
     //     console.log(cursorStyle);
     //     if (cursorStyle === 'not-allowedd') {

@@ -1,5 +1,5 @@
 import { calcTileType, createCharacterTooltip } from '../utils';
-import { Character } from '../Character';
+import { Character } from '../models/characters';
 
 describe('Test calcTileType function', () => {
   test.each([
@@ -17,12 +17,16 @@ describe('Test createCharacterTooltip function', () => {
   test.each([
     [
       'Case 1',
-      { level: 1, attack: 40, defence: 10, health: 50 },
+      {
+        level: 1, attack: 40, defence: 10, health: 50,
+      },
       '🎖1 ⚔40 🛡10 ❤50',
     ],
     [
       'Case 2',
-      { level: 3, attack: 10, defence: 40, health: 99 },
+      {
+        level: 3, attack: 10, defence: 40, health: 99,
+      },
       '🎖3 ⚔10 🛡40 ❤99',
     ],
   ])('%s', (_, char, expected) => {

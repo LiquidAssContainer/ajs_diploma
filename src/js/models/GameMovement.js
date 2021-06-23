@@ -11,8 +11,8 @@ export default class GameMovement {
 
   calculateDistance(charPosition, cellIndex) {
     const { boardSize } = this.gamePlay;
-    const verticalDiff =
-      Math.floor(cellIndex / boardSize) - Math.floor(charPosition / boardSize);
+    const verticalDiff = Math.floor(cellIndex / boardSize)
+      - Math.floor(charPosition / boardSize);
     const horizontalDiff = (cellIndex % boardSize) - (charPosition % boardSize);
     const distance = Math.max(Math.abs(verticalDiff), Math.abs(horizontalDiff));
     // console.log({ distance, verticalDiff, horizontalDiff })
@@ -28,7 +28,7 @@ export default class GameMovement {
   isCellAvailableForMove({ character, position }, targetIndex) {
     const { distance } = this.calculateDistance(position, targetIndex);
     const cell = this.gamePlay.cells[targetIndex];
-    const isEmpty = this.gameController.isCellEmpty(cell)
+    const isEmpty = this.gameController.isCellEmpty(cell);
     return isEmpty && character.moveRange >= distance;
   }
 }

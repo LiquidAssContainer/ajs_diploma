@@ -29,7 +29,7 @@ export class Character {
   increaseStat(stat) {
     const newValue = Math.max(
       this[stat],
-      (this[stat] * (80 + this.health)) / 100
+      (this[stat] * (80 + this.health)) / 100,
     );
     this[stat] = Math.floor(newValue);
   }

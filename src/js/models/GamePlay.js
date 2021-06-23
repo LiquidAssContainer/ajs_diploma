@@ -50,15 +50,9 @@ export default class GamePlay {
     this.saveGameEl = this.container.querySelector('[data-id=action-save]');
     this.loadGameEl = this.container.querySelector('[data-id=action-load]');
 
-    this.newGameEl.addEventListener('click', (event) =>
-      this.onNewGameClick(event)
-    );
-    this.saveGameEl.addEventListener('click', (event) =>
-      this.onSaveGameClick(event)
-    );
-    this.loadGameEl.addEventListener('click', (event) =>
-      this.onLoadGameClick(event)
-    );
+    this.newGameEl.addEventListener('click', (event) => this.onNewGameClick(event));
+    this.saveGameEl.addEventListener('click', (event) => this.onSaveGameClick(event));
+    this.loadGameEl.addEventListener('click', (event) => this.onLoadGameClick(event));
 
     this.boardEl = this.container.querySelector('[data-id=board]');
 
@@ -68,7 +62,7 @@ export default class GamePlay {
       cellEl.classList.add(
         'cell',
         'map-tile',
-        `map-tile-${calcTileType(i, this.boardSize)}`
+        `map-tile-${calcTileType(i, this.boardSize)}`,
       );
       cellEl.addEventListener('mouseenter', (event) => this.onCellEnter(event));
       cellEl.addEventListener('mouseleave', (event) => this.onCellLeave(event));
@@ -109,7 +103,7 @@ export default class GamePlay {
       const healthIndicatorEl = document.createElement('div');
       healthIndicatorEl.classList.add(
         'health-level-indicator',
-        `health-level-indicator-${calcHealthLevel(character.health)}`
+        `health-level-indicator-${calcHealthLevel(character.health)}`,
       );
       healthIndicatorEl.style.width = `${character.health}%`;
       healthEl.appendChild(healthIndicatorEl);
@@ -233,7 +227,7 @@ export default class GamePlay {
   deselectCell(index) {
     const cell = this.cells[index];
     cell.classList.remove(
-      ...Array.from(cell.classList).filter((o) => o.startsWith('selected'))
+      ...Array.from(cell.classList).filter((o) => o.startsWith('selected')),
     );
   }
 

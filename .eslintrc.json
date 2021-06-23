@@ -9,11 +9,15 @@
   "rules": {
     "no-restricted-syntax": ["error", "LabeledStatement", "WithStatement"],
     "import/no-extraneous-dependencies": ["error", { "devDependencies": true }],
-    "max-len": ["error", 80]//,
-    // "class-methods-use-this": ["off"],
-    // "prefer-destructuring": ["off"],
-    // "no-unused-vars": ["off"],
-    // "default-case": ["off"],
+    "max-len": ["error", 90],
+    "class-methods-use-this": ["off"],
+    "guard-for-in": ["off"],
+    "no-unused-vars": ["off"],
+    "no-plusplus": ["off"],
+    "max-classes-per-file": ["off"],
+    "no-alert": ["off"],
+    "no-underscore-dangle": ["off"],
+    "no-param-reassign": ["off"]
     // "no-continue": ["off"],
     // "object-curly-newline": ["off"]
   }

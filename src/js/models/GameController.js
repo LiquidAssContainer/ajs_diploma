@@ -5,7 +5,7 @@ import themes from '../constants/themes';
 import cursors from '../constants/cursors';
 import { createCharacterTooltip } from '../utils';
 import EnemyAI from './EnemyAI';
-import GameMovement from './/GameMovement';
+import GameMovement from './GameMovement';
 import {
   Daemon,
   Swordsman,
@@ -95,7 +95,7 @@ export default class GameController {
       this.playerTeam.addNewCharacters(
         this.playerCharacterTypes,
         maxLevel,
-        maxLevel
+        maxLevel,
       );
       this.enemyTeam = this.generateEnemyTeam();
 
@@ -141,7 +141,7 @@ export default class GameController {
     const target = this.getCharByPosition(targetPosition);
     const { distance } = this.movement.calculateDistance(
       position,
-      targetPosition
+      targetPosition,
     );
     return target && character.attackRange >= distance;
   }
@@ -159,14 +159,14 @@ export default class GameController {
 
   getTeamPositions(side) {
     const positions = this.positions.filter(
-      (char) => char.character.side === side
+      (char) => char.character.side === side,
     );
     return positions;
   }
 
   getCharByPosition(index) {
-    const char = this.positions.find((char) => char.position === index);
-    return char || null;
+    const positionedChar = this.positions.find((char) => char.position === index);
+    return positionedChar || null;
   }
 
   removePositionedChar(positionedChar) {
@@ -276,8 +276,8 @@ export default class GameController {
     }
 
     if (
-      this.selectedChar &&
-      this.movement.isCellAvailableForMove(this.selectedChar, index)
+      this.selectedChar
+      && this.movement.isCellAvailableForMove(this.selectedChar, index)
     ) {
       this.movement.moveChar(this.selectedChar, index);
 
@@ -293,8 +293,8 @@ export default class GameController {
 
     if (this.isCellOfEnemy(cell)) {
       if (
-        this.selectedChar &&
-        this.isCellAvailableForAttack(this.selectedChar, index)
+        this.selectedChar
+        && this.isCellAvailableForAttack(this.selectedChar, index)
       ) {
         const char = this.selectedChar;
         const enemy = this.getCharByPosition(index);
@@ -309,7 +309,7 @@ export default class GameController {
 
     if (!this.isCellEmpty(cell)) {
       const positionedChar = this.positions.find(
-        (elem) => elem.position === index
+        (elem) => elem.position === index,
       );
       const { character } = positionedChar;
       const message = createCharacterTooltip(character);

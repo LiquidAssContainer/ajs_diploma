@@ -8,6 +8,7 @@ import {
   Vampire,
 } from './characters';
 import PositionedCharacter from './PositionedCharacter';
+
 export default class GameState {
   static characterClasses = {
     daemon: Daemon,
@@ -18,12 +19,14 @@ export default class GameState {
     vampire: Vampire,
   };
 
-  static from({ positions, currentTurn, currentLevel, points }) {
+  static from({
+    positions, currentTurn, currentLevel, points,
+  }) {
     const savedPositions = [];
 
     for (const positionedChar of positions) {
       const { character, position } = positionedChar;
-      const characterProperties = Object.assign({}, character);
+      const characterProperties = { ...character };
 
       const formattedPositionedChar = {
         position,
@@ -35,12 +38,16 @@ export default class GameState {
     }
 
     // console.log(savedPositions);
-    const formattedData = { currentTurn, currentLevel, points, savedPositions };
+    const formattedData = {
+      currentTurn, currentLevel, points, savedPositions,
+    };
     // return JSON.stringify(formattedData);
     return formattedData;
   }
 
-  static parseSavedData({ currentTurn, currentLevel, points, savedPositions }) {
+  static parseSavedData({
+    currentTurn, currentLevel, points, savedPositions,
+  }) {
     // const parsed = JSON.parse(json);
     // console.log(data)
     const parsedData = [];
@@ -60,6 +67,8 @@ export default class GameState {
     }
 
     console.log(parsedData);
-    return { currentTurn, currentLevel, points, positions: parsedData };
+    return {
+      currentTurn, currentLevel, points, positions: parsedData,
+    };
   }
 }

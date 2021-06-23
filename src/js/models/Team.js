@@ -10,13 +10,15 @@ import {
 } from './characters';
 
 export default class Team {
-  constructor({ side, allowedTypes, maxLevel, characterCount }) {
+  constructor({
+    side, allowedTypes, maxLevel, characterCount,
+  }) {
     this.side = side;
     this.characters = [];
     this.addNewCharacters(allowedTypes, maxLevel, characterCount);
   }
 
-  *[Symbol.iterator]() {
+  * [Symbol.iterator]() {
     const { characters } = this;
     const { length } = characters;
 
@@ -31,9 +33,9 @@ export default class Team {
 
   generateCharacter(allowedTypes, maxLevel) {
     const index = Math.floor(Math.random() * allowedTypes.length);
-    const characterConstructor = allowedTypes[index];
+    const CharacterConstructor = allowedTypes[index];
     const level = Math.floor(Math.random() * maxLevel + 1);
-    return new characterConstructor(level);
+    return new CharacterConstructor(level);
   }
 
   addNewCharacters(allowedTypes, maxLevel, characterCount) {
