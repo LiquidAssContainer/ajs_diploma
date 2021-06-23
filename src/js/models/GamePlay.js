@@ -1,4 +1,6 @@
-import { calcHealthLevel, calcTileType } from './utils';
+import { calcHealthLevel, calcTileType } from '../utils';
+import themes from '../constants/themes';
+import cursors from '../constants/cursors';
 
 export default class GamePlay {
   constructor() {
@@ -12,6 +14,7 @@ export default class GamePlay {
     this.newGameListeners = [];
     this.saveGameListeners = [];
     this.loadGameListeners = [];
+    this.isPlayerFrozen = false;
   }
 
   bindToDOM(container) {
@@ -38,29 +41,49 @@ export default class GamePlay {
       <div class="board-container">
         <div data-id="board" class="board"></div>
       </div>
+      <div class="game-info">
+        <div class="player-points">Количество баллов: 0</div>
+      </div>
     `;
 
     this.newGameEl = this.container.querySelector('[data-id=action-restart]');
     this.saveGameEl = this.container.querySelector('[data-id=action-save]');
     this.loadGameEl = this.container.querySelector('[data-id=action-load]');
 
-    this.newGameEl.addEventListener('click', event => this.onNewGameClick(event));
-    this.saveGameEl.addEventListener('click', event => this.onSaveGameClick(event));
-    this.loadGameEl.addEventListener('click', event => this.onLoadGameClick(event));
+    this.newGameEl.addEventListener('click', (event) =>
+      this.onNewGameClick(event)
+    );
+    this.saveGameEl.addEventListener('click', (event) =>
+      this.onSaveGameClick(event)
+    );
+    this.loadGameEl.addEventListener('click', (event) =>
+      this.onLoadGameClick(event)
+    );
 
     this.boardEl = this.container.querySelector('[data-id=board]');
 
     this.boardEl.classList.add(theme);
     for (let i = 0; i < this.boardSize ** 2; i += 1) {
       const cellEl = document.createElement('div');
-      cellEl.classList.add('cell', 'map-tile', `map-tile-${calcTileType(i, this.boardSize)}`);
-      cellEl.addEventListener('mouseenter', event => this.onCellEnter(event));
-      cellEl.addEventListener('mouseleave', event => this.onCellLeave(event));
-      cellEl.addEventListener('click', event => this.onCellClick(event));
+      cellEl.classList.add(
+        'cell',
+        'map-tile',
+        `map-tile-${calcTileType(i, this.boardSize)}`
+      );
+      cellEl.addEventListener('mouseenter', (event) => this.onCellEnter(event));
+      cellEl.addEventListener('mouseleave', (event) => this.onCellLeave(event));
+      cellEl.addEventListener('click', (event) => this.onCellClick(event));
       this.boardEl.appendChild(cellEl);
     }
 
-    this.cells = Array.from(this.boardEl.children);
+    this.cells = Array.from(this.boardEl.querySelectorAll('.cell'));
+  }
+
+  changeTheme(levelNumber) {
+    for (const theme in themes) {
+      this.boardEl.classList.remove(theme);
+    }
+    this.boardEl.classList.add(themes[levelNumber]);
   }
 
   /**
@@ -73,17 +96,22 @@ export default class GamePlay {
       cell.innerHTML = '';
     }
 
-    for (const position of positions) {
-      const cellEl = this.boardEl.children[position.position];
+    for (const positionedChar of positions) {
+      const { position, character } = positionedChar;
+      // const cellEl = this.boardEl.children[position.position];
+      const cellEl = this.cells[position];
       const charEl = document.createElement('div');
-      charEl.classList.add('character', position.character.type);
+      charEl.classList.add('character', character.type, character.side);
 
       const healthEl = document.createElement('div');
       healthEl.classList.add('health-level');
 
       const healthIndicatorEl = document.createElement('div');
-      healthIndicatorEl.classList.add('health-level-indicator', `health-level-indicator-${calcHealthLevel(position.character.health)}`);
-      healthIndicatorEl.style.width = `${position.character.health}%`;
+      healthIndicatorEl.classList.add(
+        'health-level-indicator',
+        `health-level-indicator-${calcHealthLevel(character.health)}`
+      );
+      healthIndicatorEl.style.width = `${character.health}%`;
       healthEl.appendChild(healthIndicatorEl);
 
       charEl.appendChild(healthEl);
@@ -147,41 +175,53 @@ export default class GamePlay {
 
   onCellEnter(event) {
     event.preventDefault();
+    if (this.isPlayerFrozen) {
+      this.setCursor(cursors.notallowed);
+      return;
+    }
     const index = this.cells.indexOf(event.currentTarget);
-    this.cellEnterListeners.forEach(o => o.call(null, index));
+    this.cellEnterListeners.forEach((o) => o.call(null, index));
   }
 
   onCellLeave(event) {
     event.preventDefault();
+    if (this.isPlayerFrozen) {
+      this.setCursor(cursors.notallowed);
+      return;
+    }
     const index = this.cells.indexOf(event.currentTarget);
-    this.cellLeaveListeners.forEach(o => o.call(null, index));
+    this.cellLeaveListeners.forEach((o) => o.call(null, index));
   }
 
   onCellClick(event) {
+    if (this.isPlayerFrozen) {
+      this.setCursor(cursors.notallowed);
+      return;
+    }
     const index = this.cells.indexOf(event.currentTarget);
-    this.cellClickListeners.forEach(o => o.call(null, index));
+    this.cellClickListeners.forEach((o) => o.call(null, index));
   }
 
   onNewGameClick(event) {
     event.preventDefault();
-    this.newGameListeners.forEach(o => o.call(null));
+    this.newGameListeners.forEach((o) => o.call(null));
   }
 
   onSaveGameClick(event) {
     event.preventDefault();
-    this.saveGameListeners.forEach(o => o.call(null));
+    this.saveGameListeners.forEach((o) => o.call(null));
   }
 
   onLoadGameClick(event) {
     event.preventDefault();
-    this.loadGameListeners.forEach(o => o.call(null));
+    this.loadGameListeners.forEach((o) => o.call(null));
   }
 
-  static showError(message) {
+  showError(message) {
     alert(message);
   }
 
-  static showMessage(message) {
+  showMessage(message) {
     alert(message);
   }
 
@@ -192,8 +232,9 @@ export default class GamePlay {
 
   deselectCell(index) {
     const cell = this.cells[index];
-    cell.classList.remove(...Array.from(cell.classList)
-      .filter(o => o.startsWith('selected')));
+    cell.classList.remove(
+      ...Array.from(cell.classList).filter((o) => o.startsWith('selected'))
+    );
   }
 
   showCellTooltip(message, index) {
@@ -203,17 +244,21 @@ export default class GamePlay {
   hideCellTooltip(index) {
     this.cells[index].title = '';
   }
-  
+
   showDamage(index, damage) {
     return new Promise((resolve) => {
       const cell = this.cells[index];
+      const { offsetTop, offsetLeft } = cell;
+      console.log(offsetTop, offsetLeft);
       const damageEl = document.createElement('span');
       damageEl.textContent = damage;
       damageEl.classList.add('damage');
-      cell.appendChild(damageEl);
+      damageEl.style.top = `${offsetTop}px`;
+      damageEl.style.left = `${offsetLeft}px`;
+      cell.insertAdjacentElement('afterend', damageEl);
 
       damageEl.addEventListener('animationend', () => {
-        cell.removeChild(damageEl);
+        damageEl.remove();
         resolve();
       });
     });
