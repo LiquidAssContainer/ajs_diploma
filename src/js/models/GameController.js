@@ -89,13 +89,13 @@ export default class GameController {
       this.startNewGame();
     }
 
+    this.isLevelStart = true;
     this.currentTurn = 'player';
     this.selectedChar = null;
     this.gamePlay.drawUi(themes[this.currentLevel]);
 
     if (this.currentLevel > 1) {
       this.positions = [];
-      this.isLevelStart = true;
       this.recalculatePoints();
       this.playerTeam.charsLevelUp();
 
