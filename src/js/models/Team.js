@@ -1,4 +1,3 @@
-// import PositionedCharacter from './PositionedCharacter';
 import {
   Character,
   Daemon,
@@ -22,7 +21,7 @@ export default class Team {
     const { characters } = this;
     const { length } = characters;
 
-    for (let i = 0; i < length; i += 1) {
+    for (let i = 0; i < length; i++) {
       yield [...characters][i];
     }
   }
@@ -46,7 +45,7 @@ export default class Team {
   }
 
   removeChar(character) {
-    const index = this.characters.findIndex((elem) => elem === character);
+    const index = this.characters.findIndex((char) => char === character);
     if (index !== -1) {
       this.characters.splice(index, 1);
     }

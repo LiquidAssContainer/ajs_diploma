@@ -1,15 +1,10 @@
 import {
-  Character,
-  Daemon,
-  Swordsman,
-  Magician,
-  Bowman,
-  Undead,
-  Vampire,
+  Daemon, Swordsman, Magician, Bowman, Undead, Vampire,
 } from './characters';
 import PositionedCharacter from './PositionedCharacter';
 
 export default class GameState {
+  // иначе не получалось создавать экземпляры классов
   static characterClasses = {
     daemon: Daemon,
     swordsman: Swordsman,
@@ -26,49 +21,58 @@ export default class GameState {
 
     for (const positionedChar of positions) {
       const { character, position } = positionedChar;
-      const characterProperties = { ...character };
-
+      const properties = { ...character };
       const formattedPositionedChar = {
         position,
-        characterProperties,
+        properties,
         constructorName: character.type,
       };
-
       savedPositions.push(formattedPositionedChar);
     }
 
-    // console.log(savedPositions);
-    const formattedData = {
-      currentTurn, currentLevel, points, savedPositions,
+    return {
+      currentTurn,
+      currentLevel,
+      points,
+      savedPositions,
     };
-    // return JSON.stringify(formattedData);
-    return formattedData;
   }
 
-  static parseSavedData({
+  static getSavedData({
     currentTurn, currentLevel, points, savedPositions,
   }) {
-    // const parsed = JSON.parse(json);
-    // console.log(data)
-    const parsedData = [];
+    const playerCharacters = [];
+    const enemyCharacters = [];
+    const positions = [];
 
     for (const savedChar of savedPositions) {
-      const { constructorName, position, characterProperties } = savedChar;
-      // console.log(constructorName)
+      const { position, properties, constructorName } = savedChar;
       const Constructor = this.characterClasses[constructorName];
-      // console.log(Constructor)
       const newChar = new Constructor(1);
-      for (const prop in characterProperties) {
-        newChar[prop] = characterProperties[prop];
+
+      for (const prop in properties) {
+        newChar[prop] = properties[prop];
       }
+
       const positionedChar = new PositionedCharacter(newChar, position);
-      parsedData.push(positionedChar);
-      // console.log(positionedChar);
+      positions.push(positionedChar);
+
+      if (newChar.side === 'player') {
+        playerCharacters.push(newChar);
+      } else {
+        enemyCharacters.push(newChar);
+      }
     }
 
-    console.log(parsedData);
     return {
-      currentTurn, currentLevel, points, positions: parsedData,
+      playerCharacters,
+      enemyCharacters,
+      gameControllerProperties: {
+        currentTurn,
+        currentLevel,
+        points,
+        positions,
+      },
     };
   }
 }

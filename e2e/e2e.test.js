@@ -1,7 +1,5 @@
 import puppeteer from 'puppeteer';
 import { fork } from 'child_process';
-// import { Promise } from 'core-js';
-// import { resolve } from 'path';
 
 jest.setTimeout(30000); // default puppeteer timeout
 
@@ -36,6 +34,7 @@ describe('Credit Card Validator form', () => {
   });
 
   test('Test cursor style changing', async () => {
+    // тест сделан не до конца
     await page.goto(baseUrl);
 
     const boardElem = await page.$('.board');
@@ -47,43 +46,5 @@ describe('Credit Card Validator form', () => {
     await enemyChar.hover();
     const cursorStyle = await page.$eval('.board', (el) => el.style.cursor);
     if (cursorStyle !== 'not-allowed') throw new Error('Wrong cursor style');
-    // console.log(cursorStyle)
-    // const isCursorNotAllowed = await page.evaluate(() => {
-    // await page.evaluate(() => {
-    //   return new Promise((resolve) => {
-    //     const body = document.querySelector('body');
-
-    //     const cursorStyle = getComputedStyle(body).getPropertyValue('cursor');
-    //     console.log(cursorStyle);
-    //     if (cursorStyle === 'not-allowedd') {
-    //       resolve();
-    //     }
-    //   })
-    //   // return getComputedStyle(body);
-    // });
   });
-
-  // test('Should add .invalid class for invalid card number', async () => {
-  //   await page.goto(baseUrl);
-
-  //   const form = await page.$('#form');
-  //   const input = await form.$('#card-number-input');
-
-  //   await input.type('7715964180');
-  //   const submit = await form.$('#submit');
-  //   submit.click();
-  //   await page.waitForSelector('#card-number-input.invalid');
-  // });
-
-  // test('Should add .valid class for valid card number', async () => {
-  //   await page.goto(baseUrl);
-
-  //   const form = await page.$('#form');
-  //   const input = await form.$('#card-number-input');
-
-  //   await input.type('5551643264270868');
-  //   const submit = await form.$('#submit');
-  //   submit.click();
-  //   await page.waitForSelector('#card-number-input.valid');
-  // });
 });

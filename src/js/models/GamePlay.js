@@ -75,7 +75,7 @@ export default class GamePlay {
 
   changeTheme(levelNumber) {
     for (const theme in themes) {
-      this.boardEl.classList.remove(theme);
+      this.boardEl.classList.remove(themes[theme]);
     }
     this.boardEl.classList.add(themes[levelNumber]);
   }
@@ -169,29 +169,25 @@ export default class GamePlay {
 
   onCellEnter(event) {
     event.preventDefault();
-    if (this.isPlayerFrozen) {
-      this.setCursor(cursors.notallowed);
-      return;
-    }
     const index = this.cells.indexOf(event.currentTarget);
+    this.lastEnteredCellIndex = index;
+
+    if (this.isPlayerFrozen) return;
+
     this.cellEnterListeners.forEach((o) => o.call(null, index));
   }
 
   onCellLeave(event) {
     event.preventDefault();
-    if (this.isPlayerFrozen) {
-      this.setCursor(cursors.notallowed);
-      return;
-    }
+    if (this.isPlayerFrozen) return;
+
     const index = this.cells.indexOf(event.currentTarget);
     this.cellLeaveListeners.forEach((o) => o.call(null, index));
   }
 
   onCellClick(event) {
-    if (this.isPlayerFrozen) {
-      this.setCursor(cursors.notallowed);
-      return;
-    }
+    if (this.isPlayerFrozen) return;
+
     const index = this.cells.indexOf(event.currentTarget);
     this.cellClickListeners.forEach((o) => o.call(null, index));
   }
@@ -240,22 +236,21 @@ export default class GamePlay {
   }
 
   showDamage(index, damage) {
-    return new Promise((resolve) => {
-      const cell = this.cells[index];
-      const { offsetTop, offsetLeft } = cell;
-      console.log(offsetTop, offsetLeft);
-      const damageEl = document.createElement('span');
-      damageEl.textContent = damage;
-      damageEl.classList.add('damage');
-      damageEl.style.top = `${offsetTop}px`;
-      damageEl.style.left = `${offsetLeft}px`;
-      cell.insertAdjacentElement('afterend', damageEl);
+    // return new Promise((resolve) => {
+    const cell = this.cells[index];
+    const { offsetTop, offsetLeft } = cell;
+    const damageEl = document.createElement('span');
+    damageEl.textContent = damage;
+    damageEl.classList.add('damage');
+    damageEl.style.top = `${offsetTop}px`;
+    damageEl.style.left = `${offsetLeft}px`;
+    cell.insertAdjacentElement('afterend', damageEl);
 
-      damageEl.addEventListener('animationend', () => {
-        damageEl.remove();
-        resolve();
-      });
+    damageEl.addEventListener('animationend', () => {
+      damageEl.remove();
+      // resolve();
     });
+    // });
   }
 
   setCursor(cursor) {

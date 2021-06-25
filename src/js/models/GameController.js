@@ -25,6 +25,12 @@ export default class GameController {
     this.currentTurn = 'player';
     this.enemyAI = new EnemyAI(this);
     this.selectedChar = null;
+    this.playerOptions = {
+      side: 'player',
+      allowedTypes: [Swordsman, Magician, Bowman],
+      maxLevel: 1,
+      characterCount: 2,
+    };
   }
 
   init() {
@@ -44,32 +50,34 @@ export default class GameController {
 
   loadHandler() {
     const data = this.stateService.load();
-    console.log(data);
-    const parsedData = GameState.parseSavedData(data);
-    for (const prop in parsedData) {
-      this[prop] = parsedData[prop];
+    const savedData = GameState.getSavedData(data);
+    const {
+      gameControllerProperties: properties,
+      playerCharacters,
+      enemyCharacters,
+    } = savedData;
+
+    for (const prop in properties) {
+      this[prop] = properties[prop];
     }
-    this.gamePlay.changeTheme(parsedData.currentLevel);
+    this.playerTeam.characters = playerCharacters;
+    this.enemyTeam.characters = enemyCharacters;
+    this.gamePlay.changeTheme(this.currentLevel);
     this.redrawPositions();
-    if (this.currentTurn === 'enemy') this.enemyAI.doAction();
+    if (this.currentTurn === 'enemy') {
+      this.handleEnemyTurn();
+    }
   }
 
   startNewGame() {
     this.points = 0;
+    this.playerTeam = new Team(this.playerOptions);
+    this.enemyTeam = this.generateEnemyTeam();
     this.positions = [];
+    this.positionChars(this.playerTeam, this.enemyTeam);
 
     this.currentLevel = 0;
     this.startNextLevel();
-
-    const playerOptions = {
-      side: 'player',
-      allowedTypes: [Swordsman, Magician, Bowman],
-      maxLevel: 1,
-      characterCount: 2,
-    };
-    this.playerTeam = new Team(playerOptions, this);
-    this.enemyTeam = this.generateEnemyTeam();
-    this.positionChars(this.playerTeam, this.enemyTeam);
 
     this.redrawPositions();
   }
@@ -83,20 +91,16 @@ export default class GameController {
 
     this.currentTurn = 'player';
     this.selectedChar = null;
-    this.positions = [];
     this.gamePlay.drawUi(themes[this.currentLevel]);
 
     if (this.currentLevel > 1) {
+      this.positions = [];
       this.isLevelStart = true;
       this.recalculatePoints();
       this.playerTeam.charsLevelUp();
 
       const maxLevel = this.currentLevel - 1;
-      this.playerTeam.addNewCharacters(
-        this.playerCharacterTypes,
-        maxLevel,
-        maxLevel,
-      );
+      this.playerTeam.addNewCharacters(this.playerCharacterTypes, maxLevel, maxLevel);
       this.enemyTeam = this.generateEnemyTeam();
 
       this.positionChars(this.playerTeam, this.enemyTeam);
@@ -139,10 +143,7 @@ export default class GameController {
   isCellAvailableForAttack(actor, targetPosition) {
     const { character, position } = actor;
     const target = this.getCharByPosition(targetPosition);
-    const { distance } = this.movement.calculateDistance(
-      position,
-      targetPosition,
-    );
+    const { distance } = this.movement.calculateDistance(position, targetPosition);
     return target && character.attackRange >= distance;
   }
 
@@ -158,9 +159,7 @@ export default class GameController {
   }
 
   getTeamPositions(side) {
-    const positions = this.positions.filter(
-      (char) => char.character.side === side,
-    );
+    const positions = this.positions.filter((char) => char.character.side === side);
     return positions;
   }
 
@@ -194,42 +193,45 @@ export default class GameController {
   }
 
   deselectEnemyCharacter(index) {
-    this.gamePlay.deselectCell(index);
+    if (index) {
+      this.gamePlay.deselectCell(index);
+    } else {
+      const selected = document.getElementsByClassName('selected-red');
+      selected.forEach((elem) => elem.classList.remove('selected-red'));
+    }
   }
 
-  switchTurn() {
-    this.currentTurn = this.currentTurn === 'player' ? 'enemy' : 'player';
-    // довольно костыльное решение проблемы, когда в начале след. уровня ходит противник
-    if (this.isLevelStart) {
-      this.isLevelStart = false;
-      this.currentTurn = 'player';
-      return;
-    }
+  switchTurn(delay = 0) {
+    return new Promise((resolve) => {
+      this.currentTurn = this.currentTurn === 'player' ? 'enemy' : 'player';
+      // довольно костыльное решение проблемы, когда в начале след. уровня ходит противник
+      if (this.isLevelStart) {
+        this.isLevelStart = false;
+        this.currentTurn = 'player';
+        return;
+      }
+      setTimeout(() => {
+        if (this.currentTurn === 'enemy') {
+          this.handleEnemyTurn();
+        } else {
+          this.handlePlayerTurn();
+        }
+        resolve();
+      }, delay);
+    });
+  }
 
-    if (this.currentTurn === 'enemy') {
-      this.gamePlay.isPlayerFrozen = true;
-      // this.onCellEnter(this.lastEnteredCellIndex);
-      // this.lastSetCursor = this.gamePlay.boardEl.style.cursor;
-      // this.gamePlay.setCursor(cursors.notallowed);
-      this.enemyAI.doAction();
-    } else {
-      this.gamePlay.isPlayerFrozen = false;
-      console.log(this.lastEnteredCellIndex);
-      this.onCellEnter(this.lastEnteredCellIndex);
-      // this.gamePlay.boardEl.style.cursor = this.lastSetCursor;
-      // console.log(this.lastSetCursor)
-      // this.onCellEnter(this.lastEnteredCellIndex);
+  async handleEnemyTurn() {
+    this.gamePlay.isPlayerFrozen = true;
+    this.gamePlay.setCursor(cursors.notallowed);
 
-      // const x = window.scrollX,
-      //   y = window.scrollY;
-      // console.log(x, y);
-      // const elementFromPoint = document.elementFromPoint(x, y);
-      // const cell = elementFromPoint.closest('.cell');
-      // if (cell) {
-      //   const index = this.cells.indexOf(cell);
-      //   this.onCellEnter(index);
-      // }
-    }
+    await this.enemyAI.doAction();
+    await this.switchTurn(100);
+  }
+
+  handlePlayerTurn() {
+    this.gamePlay.isPlayerFrozen = false;
+    this.onCellEnter(this.gamePlay.lastEnteredCellIndex);
   }
 
   commitTeamDefeat(side) {
@@ -250,11 +252,12 @@ export default class GameController {
     }
   }
 
-  async performAttack(actor, target) {
+  performAttack(actor, target) {
     const actorChar = actor.character;
     const targetChar = target.character;
     const damage = actorChar.calculateDamage(targetChar);
     targetChar.health -= damage;
+    this.gamePlay.showDamage(target.position, damage);
 
     if (targetChar.health <= 0) {
       this.removeCharacter(target, targetChar.side);
@@ -264,12 +267,9 @@ export default class GameController {
     }
 
     this.redrawPositions();
-    await this.gamePlay.showDamage(target.position, damage);
   }
 
-  onCellClick(index) {
-    const cell = this.gamePlay.cells[index];
-
+  async onCellClick(index) {
     const selectedCell = document.getElementsByClassName('selected')[0];
     if (selectedCell) {
       selectedCell.classList.remove('selected', 'selected-yellow');
@@ -280,37 +280,28 @@ export default class GameController {
       && this.movement.isCellAvailableForMove(this.selectedChar, index)
     ) {
       this.movement.moveChar(this.selectedChar, index);
-
-      console.log('oncellclick');
-      this.switchTurn();
+      await this.switchTurn();
       return;
     }
 
-    if (this.isCellOfPlayer(cell)) {
+    if (this.isCellOfPlayer(index)) {
       this.gamePlay.selectCell(index);
       this.selectedChar = this.getCharByPosition(index);
     }
 
-    if (this.isCellOfEnemy(cell)) {
-      if (
-        this.selectedChar
-        && this.isCellAvailableForAttack(this.selectedChar, index)
-      ) {
+    if (this.isCellOfEnemy(index)) {
+      if (this.selectedChar && this.isCellAvailableForAttack(this.selectedChar, index)) {
         const char = this.selectedChar;
         const enemy = this.getCharByPosition(index);
         this.performAttack(char, enemy);
-        this.switchTurn();
+        await this.switchTurn();
       }
     }
   }
 
   onCellEnter(index) {
-    const cell = this.gamePlay.cells[index];
-
-    if (!this.isCellEmpty(cell)) {
-      const positionedChar = this.positions.find(
-        (elem) => elem.position === index,
-      );
+    if (!this.isCellEmpty(index)) {
+      const positionedChar = this.positions.find((elem) => elem.position === index);
       const { character } = positionedChar;
       const message = createCharacterTooltip(character);
       this.gamePlay.showCellTooltip(message, index);
@@ -318,15 +309,13 @@ export default class GameController {
       this.handleAimAtEmptyCell(this.selectedChar, index);
     }
 
-    if (this.isCellOfPlayer(cell)) {
+    if (this.isCellOfPlayer(index)) {
       this.gamePlay.setCursor(cursors.pointer);
     }
 
-    if (this.selectedChar && this.isCellOfEnemy(cell)) {
+    if (this.selectedChar && this.isCellOfEnemy(index)) {
       this.handleAimAtEnemy(this.selectedChar, index);
     }
-
-    this.lastEnteredCellIndex = index;
   }
 
   onCellLeave(index) {
@@ -341,18 +330,23 @@ export default class GameController {
     }
   }
 
-  isCellOfPlayer(cell) {
-    const cellChild = cell.firstChild;
+  getCellChildByIndex(index) {
+    const cell = this.gamePlay.cells[index];
+    return cell.firstChild;
+  }
+
+  isCellOfPlayer(index) {
+    const cellChild = this.getCellChildByIndex(index);
     return cellChild?.classList.contains('player');
   }
 
-  isCellOfEnemy(cell) {
-    const cellChild = cell.firstChild;
+  isCellOfEnemy(index) {
+    const cellChild = this.getCellChildByIndex(index);
     return cellChild?.classList.contains('enemy');
   }
 
-  isCellEmpty(cell) {
-    const cellChild = cell.firstChild;
+  isCellEmpty(index) {
+    const cellChild = this.getCellChildByIndex(index);
     return !cellChild;
   }
 
