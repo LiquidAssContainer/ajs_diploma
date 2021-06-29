@@ -203,13 +203,12 @@ export default class GameController {
 
   switchTurn(delay = 0) {
     return new Promise((resolve) => {
-      this.currentTurn = this.currentTurn === 'player' ? 'enemy' : 'player';
-      // довольно костыльное решение проблемы, когда в начале след. уровня ходит противник
+      // костыльное решение проблемы, когда в начале следующего уровня ходит противник
       if (this.isLevelStart) {
-        this.isLevelStart = false;
         this.currentTurn = 'player';
         return;
       }
+      this.currentTurn = this.currentTurn === 'player' ? 'enemy' : 'player';
       setTimeout(() => {
         if (this.currentTurn === 'enemy') {
           this.handleEnemyTurn();
@@ -252,6 +251,16 @@ export default class GameController {
     }
   }
 
+  performPlayerAction(actionType, index) {
+    this.isLevelStart = false;
+    if (actionType === 'attack') {
+      const enemy = this.getCharByPosition(index);
+      this.performAttack(this.selectedChar, enemy);
+    } else {
+      this.movement.moveChar(this.selectedChar, index);
+    }
+  }
+
   performAttack(actor, target) {
     const actorChar = actor.character;
     const targetChar = target.character;
@@ -279,7 +288,7 @@ export default class GameController {
       this.selectedChar
       && this.movement.isCellAvailableForMove(this.selectedChar, index)
     ) {
-      this.movement.moveChar(this.selectedChar, index);
+      this.performPlayerAction('move', index);
       await this.switchTurn();
       return;
     }
@@ -291,9 +300,7 @@ export default class GameController {
 
     if (this.isCellOfEnemy(index)) {
       if (this.selectedChar && this.isCellAvailableForAttack(this.selectedChar, index)) {
-        const char = this.selectedChar;
-        const enemy = this.getCharByPosition(index);
-        this.performAttack(char, enemy);
+        this.performPlayerAction('attack', index);
         await this.switchTurn();
       }
     }
