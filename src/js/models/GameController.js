@@ -49,7 +49,18 @@ export default class GameController {
   }
 
   loadHandler() {
-    const data = this.stateService.load();
+    let data;
+    // console.log(1)
+    try {
+      // console.log(2)
+      data = this.stateService.load();
+      // console.log(2);
+    } catch (e) {
+      this.gamePlay.showMessage(e.message);
+      return;
+    }
+
+    // console.log(3)
     const savedData = GameState.getSavedData(data);
     const {
       gameControllerProperties: properties,
@@ -205,6 +216,7 @@ export default class GameController {
     return new Promise((resolve) => {
       // костыльное решение проблемы, когда в начале следующего уровня ходит противник
       if (this.isLevelStart) {
+        this.gamePlay.isPlayerFrozen = false;
         this.currentTurn = 'player';
         return;
       }
